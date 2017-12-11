@@ -1,0 +1,134 @@
+GOALS:
+	ACHIEVE water_found;
+	
+FACTS:
+	FACT coordinate "base" 0 0; //base location
+	FACT rock1 3 2;
+	FACT rock2 6 1;
+	FACT rock3 5 3;
+	FACT rock4w 7 5;
+	FACT rock5 2 6;
+	FACT position 0 0;
+	FACT waterLocated 0;
+	FACT direction 1;
+
+GOALS:
+	ACHIEVE: water_at_base
+		
+
+PLAN:	{
+
+	NAME:	"Right"
+	GOAL:	
+		ACHIEVE position $x $y; 
+	CONTEXT:
+		RETRIEVE position $x $y;
+		RETRIEVE rock1 $x1 $y1;
+		RETRIEVE rock2 $x2 $y2;
+		RETRIEVE rock3 $x3 $y3;
+		RETRIEVE rock4w $x4 $y4;
+		RETRIEVE rock5 $x5 $y5;
+
+	BODY:
+		EXECUTE println "checking if rock is in the way";
+		WHEN : TEST(!= $x $x1) {
+			WHEN : TEST(!= $y $y1)
+				{
+			}
+			   (!= $x $x2)
+			   (!= $x $x3)
+			   (!= $x $x4)
+			   (!= $x $x5)
+		EXECUTE println "moving right from" $x $y;
+		ASSIGN $x (+ $x 1);
+		UPDATE (position) (position $x);
+		ACHIEVE position $x $y;
+	FAILURE:
+		EXECUTE println "failed to turn right";
+}
+
+PLAN:	{
+
+	NAME:	"Up"
+	GOAL:
+		ACHIEVE position $x $y;
+	CONTEXT:
+		RETRIEVE position $x $y;
+		RETRIEVE rock1 $x1 $y1;
+		RETRIEVE rock2 $x2 $y2;
+		RETRIEVE rock3 $x3 $y3;
+		RETRIEVE rock4w $x4 $y4;
+		RETRIEVE rock5 $x5 $y5;
+	BODY:
+		EXECUTE println "moving up from" $x $y;
+		ASSIGN $y (+ $y 1);
+		UPDATE position (position $y);
+		ACHIEVE position $x $y;
+	FAILURE:
+		EXECUTE println "failed to go up";
+		
+}
+
+
+PLAN:	{
+	NAME:	"Down"
+	GOAL:
+		ACHIEVE position $x $y;
+	CONTEXT:
+		RETRIEVE position $x $y;
+		RETRIEVE rock1 $x1 $y1;
+		RETRIEVE rock2 $x2 $y2;
+		RETRIEVE rock3 $x3 $y3;
+		RETRIEVE rock4w $x4 $y4;
+		RETRIEVE rock5 $x5 $y5;
+	BODY:
+		EXECUTE println "moving down from" $x $y;
+		ASSIGN $y (- $y 1);
+		UPDATE  position (position $x $y);
+		ACHIEVE position $x $y;
+	FAILURE:
+		EXECUTE println "failed to go down";
+		
+}
+
+PLAN:	{
+
+	NAME:	"Left"
+	GOAL:
+		ACHIEVE position $x $y;
+	CONTEXT:
+		RETRIEVE position $x $y;
+		RETRIEVE rock1 $x1 $y1;
+		RETRIEVE rock2 $x2 $y2;
+		RETRIEVE rock3 $x3 $y3;
+		RETRIEVE rock4w $x4 $y4;
+		RETRIEVE rock5 $x5 $y5;
+	BODY:
+		EXECUTE println "moving left from" $x $y;
+		ASSIGN $x (- $x 1);
+		UPDATE position (position $x - 1);
+		ACHIEVE position $x $y;
+	FAILURE:
+		EXECUTE println "failed to go left";
+}	
+
+PLAN:	{
+	
+	NAME:	"Analyse Rock"
+	GOAL:
+		ACHIEVE rock "waterRock";
+	CONTEXT:
+		RETRIEVE position $x $y;
+		RETRIEVE rock1 $x1 $y1;
+		RETRIEVE rock2 $x2 $y2;
+		RETRIEVE rock3 $x3 $y3;
+		RETRIEVE rock4w $x4 $y4;
+		RETRIEVE rock5 $x5 $y5;
+	BODY:
+		WHEN : TEST(== $x $x4)
+			{
+			WHEN : TEST(== $y $y4)
+				{
+					ACHIEVE: return_base
+				}
+			}

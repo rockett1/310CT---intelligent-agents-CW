@@ -1,0 +1,133 @@
+GOALS:
+    ACHIEVE test_new_done "TRUE";
+
+FACTS:
+
+Plan: {
+NAME:
+    "Test constructor action"
+GOAL:
+    ACHIEVE test_new_done $TEXT;
+CONTEXT:
+//	FACT test_done "False";
+// RETRIEVE test_new_done $ABC;
+BODY:
+    EXECUTE println "In NEW test.";
+    ASSIGN $obj (new com.irs.jam.examples.CreateCoffees);
+    ASSIGN $String (new java.lang.String);	
+    ASSIGN $TEXT  "INSERT INTO COFFEES VALUES ('Colombian4', 101, 7.99, 0, 0)";
+    EXECUTE connect[$obj];
+    EXECUTE setSqlString[$obj] $TEXT;
+    EXECUTE executeSQL[$obj];
+    EXECUTE println "$string= " $String;
+    EXECUTE println "$a= " $a;
+//    EXECUTE println "$obj.sqlstatement: " com.irs.jam.examples.CreateCoffees.sqlstatement[$obj];
+
+    OR {
+
+        ACHIEVE test_new_done3 $obj;  
+        OR { 	
+            ACHIEVE test_new_done2 $TEXT; 
+           }
+           {
+            ACHIEVE test_new_done1 $TEXT;   
+           };
+        }
+
+        {
+         EXECUTE println "recovery plan"; 
+         ASSIGN $TEXT "DELETE * FROM COFFEES WHERE COF_NAME = 'Colombian4'";
+         EXECUTE print $TEXT;                                                                                                                                                                                                                                                                                                                              
+         EXECUTE connect[$obj];
+         EXECUTE setSqlString[$obj] $TEXT;
+         EXECUTE executeSQL[$obj];
+       };
+
+
+FAILURE: 
+     EXECUTE println "recovery plan"; 
+     ASSIGN $TEXT1  "DELETE * FROM COFFEES WHERE COF_NAME = 'Colombian4'";
+     EXECUTE print $TEXT;                                                                                                                                                                                                                                                                                                                              
+     EXECUTE connect[$obj];
+     EXECUTE setSqlString[$obj] $TEXT;
+     EXECUTE print "1 "  $TEXT;
+     EXECUTE executeSQL[$obj];
+     EXECUTE println "In NEW1 test.";
+     EXECUTE println "$TEXT 1= " $TEXT1;
+
+}
+
+
+Plan: {
+NAME:
+    "Recorder action1"
+GOAL:
+      ACHIEVE test_recovery $obj;     
+CONTEXT:
+BODY:
+     EXECUTE print "recovery plan"; 
+     ASSIGN $TEXT  "DELETE * FROM COFFEES WHERE COF_NAME = 'Colombian4'";
+     EXECUTE print $TEXT;
+     EXECUTE connect[$obj];
+     EXECUTE setSqlString[$obj] $TEXT;
+     EXECUTE print "1 "  $TEXT;
+     EXECUTE executeSQL[$obj];
+    EXECUTE println "In NEW1 test.";
+    EXECUTE println "$TEXT 1= " $TEXT;
+}
+Plan: {
+NAME:
+    "Test action1"
+GOAL:
+      ACHIEVE test_new_done1 $TEXT;
+    //ACHIEVE test_done $obj;
+CONTEXT:
+BODY:
+    EXECUTE println "In NEW1 test.";
+    EXECUTE println "$TEXT 1= " $TEXT;
+ //   EXECUTE test[$obj] "cd21";
+
+ //   UPDATE (test_new_done1) (test_new_done1 "True");
+    EXECUTE fail;
+FAILURE: 
+   EXECUTE println "\n failure in action 1 .\n";
+
+}
+
+Plan: {
+NAME:
+    "Test action2"
+GOAL:
+    ACHIEVE test_new_done2 $TEST;
+CONTEXT:
+BODY:
+
+    	    EXECUTE println "In NEW2 test.";
+	   // ASSIGN $obj (new com.irs.jam.examples.CreateCoffees "");
+    	    ASSIGN $TEXT "2.0";
+         // EXECUTE test[$obj] "cd2";
+    	    EXECUTE println "$TEXT = " $TEXT;
+    
+        //  UPDATE (test_new_done2) (test_new_done2 "True");
+          EXECUTE fail;
+   FAILURE: 
+     EXECUTE print "\nfailure in action2\n";
+}
+
+
+Plan: {
+NAME:
+    "Test action3"
+GOAL:
+    ACHIEVE test_new_done3 $obj;
+CONTEXT:
+BODY:
+    EXECUTE println "In NEW3 test.";
+    ASSIGN $String (new java.lang.String);	
+    ASSIGN $TEXT  "INSERT INTO COFFEES VALUES ('Colombian5', 101, 7.99, 0, 0)";
+    EXECUTE connect[$obj];
+    EXECUTE setSqlString[$obj] $TEXT;
+    EXECUTE executeSQL[$obj];
+    EXECUTE println $TEXT;
+    EXECUTE println "$obj = " $obj;
+}

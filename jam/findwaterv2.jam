@@ -1,0 +1,100 @@
+GOALS:
+	ACHIEVE explore;
+	
+FACTS:
+	FACT base 0 0; //base location
+	FACT rock1 3 2;
+	FACT rock2 6 1;
+	FACT rock3 5 3;
+	FACT rock4w 7 5;
+	FACT rock5 2 6;
+	FACT position 0 0;
+	FACT waterLocated 0;
+	FACT counter 0;
+			
+PLAN:	{
+	NAME:	"explore mars"
+	GOAL:
+		ACHIEVE explore;
+	BODY:
+		RETRIEVE position $x $y;
+		RETRIEVE rock4w $x4 $y4;
+		WHILE : TEST(!= $x 10) {
+		WHILE : TEST(< $y 10) {
+			ASSIGN $y (+ $y 1);
+			ASSERT position $x $y;
+			EXECUTE println "up";
+			EXECUTE println "current position:"$x" "$y;
+			
+			};
+			
+		RETRIEVE position $x $y;
+		ASSIGN $x (+ $x 1);
+		ASSERT position $x $y;
+		EXECUTE println "right";
+		EXECUTE println "current position:"$x" "$y;
+		
+
+			
+		WHILE : TEST(!= $y 0) {
+			ASSIGN $y (- $y 1);
+			ASSERT position $x $y;
+			EXECUTE println "down";
+			EXECUTE println "current position:"$x" "$y;
+			};
+			
+		RETRIEVE position $x $y;
+		ASSIGN $x (+ $x 1);
+		ASSERT position $x $y;
+		EXECUTE println "right";
+		EXECUTE println "current position:"$x" "$y;	
+		};
+}
+
+PLAN:	{
+	
+	NAME:	"Water_Found"
+	GOAL:
+		ACHIEVE waterRock;
+	BODY:
+		RETRIEVE rock4w $x4 $y4; //gets the water rocks locations
+		RETRIEVE position $x $y; //get the rovers location
+		OR {
+			TEST(== $x $x4);
+		OR {
+			TEST(== $y $y4);
+			EXECUTE println "Water rock found at position: "$x", "$y;
+			EXECUTE println "Picking up rock";
+			PERFORM return_base;
+		};
+			RETRIEVE rock4w $x4 $y4; //gets the waters location
+		}; 
+	FAILURE:
+		EXECUTE println "no water here";
+}
+
+PLAN:	{
+	NAME:	"return_base"
+	GOAL:
+		ACHIEVE base;
+	CONTEXT:
+		RETRIEVE position $x $y;
+	BODY:
+	WHILE : TEST(!= $y 0) //if y is not 0 it does the following
+	{
+		ASSIGN $y (- $y 1); //take 1 from y
+		ASSERT position $x $y; //new robot position
+		ASSERT rock4w $x $y; //new waterrock position
+		EXECUTE println "Robot at: "$x" "$y; 
+		RETRIEVE position;
+	};
+	
+	WHILE : TEST(!= $x 0)
+	{
+		ASSIGN $x (- $x 1);
+		ASSERT position $x $y;
+		ASSERT rock4w $x $y;
+		EXECUTE println "Robot at: " $x" "$y;
+		RETRIEVE position;
+	};
+}

@@ -1,0 +1,62 @@
+GOALS:
+    ACHIEVE shop_done;
+FACTS:
+    FACT cost "A"  80.0;
+    FACT cost "B" 90.0;
+    FACT cost "C"  350.0;
+    FACT cost "D"  250.0;
+    FACT cost "E"  70.0;
+    FACT expectedCost 1000.0; 
+    FACT cheapestProduct "-1";
+PLAN: {
+    NAME: "go shopping"
+    GOAL:
+        ACHIEVE shop_done;
+    BODY:
+		   ACHIEVE find_cheapest $Price;
+		   ACHIEVE print_cheapest $Price;
+
+FAILURE:
+      EXECUTE println "shop failed";
+}
+PLAN: {
+    NAME: "find cheapest price"
+    GOAL:
+        ACHIEVE find_cheapest  $Price;
+    PRECONDITION: (> $Price 999);
+    CONTEXT:
+        RETRIEVE expectedCost $PriceXptd;
+    BODY:
+        RETRIEVEALL $d cost $product $Price;
+	  ASSIGN $x 0;
+        WHILE : TEST (< $x 5)
+	   {
+          NEXTFACT $d cost $product $Price;
+          EXECUTE println "test " $product "  " $Price "  " $x;
+	    ASSIGN $x (+ $x 1);
+		EXECUTE println "product ID" $Product;
+		EXECUTE println "PRICE " $Price ;
+WHEN: TEST(< $Price $PriceXptd)
+	    {
+            UPDATE (cheapestProduct) (cheapestProduct   $Product);
+            UPDATE (expectedCost) (expectedCost $Price);
+	     };	
+	 };
+	  ASSIGN $Price $PriceXptd;
+        EXECUTE println "current cheapest: "  $Price;
+UTILITY:
+        10; //any value just to ensure it will always be 
+            //selected first (while context holds)
+    FAILURE:
+	EXECUTE println "cheapest failed: " $x ;
+}
+PLAN: {
+    NAME:
+        "keep the instantiation for the cheapest price"
+    GOAL:
+        ACHIEVE print_cheapest $Price;
+    BODY:
+        EXECUTE println "Absolutely cheapest price found was: " $Price; 
+    FAILURE:
+	EXECUTE println "cheapest2 failed";
+}

@@ -1,0 +1,196 @@
+GOALS:
+	ACHIEVE explore; //calls explore
+	
+FACTS:
+	FACT base 0 0; //base location //rocks array
+	FACT rock "7" 8 5 1;
+	FACT rock "6" 4 4 1;
+	FACT rock "5" 1 3 0;
+	FACT rock "4" 18 18 0;
+	FACT rock "3" 15 17 0;
+	FACT rock "2" 14 16 0;
+	FACT rock "1" 7 5 1;
+	FACT position 0 0; //rovers position
+	FACT gridx 20;
+	FACT gridy 20;
+	
+PLAN:	{
+	NAME:	"explore mars"	//explores mars in a 10 * 11 grid
+	GOAL:
+		ACHIEVE explore;
+	BODY:
+		RETRIEVE position $x $y;
+		RETRIEVE gridx $gx;
+		RETRIEVE gridy $gy;
+		
+		WHILE : TEST(!= $x $gx) {
+		
+		WHILE : TEST(< $y $gy) {
+			ASSIGN $y (+ $y 1);
+			ASSERT position $x $y;
+			EXECUTE println "up";
+			EXECUTE println "current position:"$x" "$y;
+			PERFORM avoidRockUp;	//calls function to check if there is a rock here
+			RETRIEVE position $x $y;
+			};
+			
+		RETRIEVE position $x $y;
+		ASSIGN $x (+ $x 1);
+		ASSERT position $x $y;
+		EXECUTE println "right";
+		EXECUTE println "current position:"$x" "$y;
+			
+		WHILE : TEST(> $y 0) {
+			ASSIGN $y (- $y 1);
+			ASSERT position $x $y;
+			EXECUTE println "down";
+			EXECUTE println "current position:"$x" "$y;
+			PERFORM avoidRockDown;	//calls function to check if there is a rock here
+			RETRIEVE position $x $y;
+			};
+			
+		RETRIEVE position $x $y;
+		ASSIGN $x (+ $x 1);
+		ASSERT position $x $y;
+		EXECUTE println "right";
+		EXECUTE println "current position:"$x" "$y;	
+		};
+}
+PLAN: {
+    NAME: "rockCheckDown"
+    GOAL:
+        ACHIEVE avoidRockDown;
+    BODY:
+        RETRIEVEALL $d rock $rock $a $b $w;	//retrieves all rocks $rock = rock number, $a = rock X coord, $b = rock Y coord, $w is water value of rock
+		RETRIEVE position $x $y;
+		
+		ASSIGN $q 0;
+        WHILE : TEST (< $q 7) //cycle through array of rocks ($q represents current item in list, 6 is size of array)
+	    {
+        NEXTFACT $d rock $rock $a $b $w;
+		
+		WHEN : TEST (== $x $a)	//check if X coord = rock $q X coord
+		{
+			WHEN : TEST (== $y $b)	//check if Y coord = rock $q Y coord
+			{
+				WHEN : TEST (== $w 1)	//check water content of rock
+				{
+				PERFORM waterRock;	//if it contains water call waterRock
+				};
+				WHEN : TEST (== $w 0)	//if it does not contain water, drive around rock
+				{
+				EXECUTE println "rock detected at: " "x:"$x "y:"$y;
+				ASSIGN $y (+ $y 1);
+				ASSERT position $x $y;
+				EXECUTE println "reverse";
+				ASSIGN $x (- $x 1);
+				ASSERT position $x $y;
+				EXECUTE println "left";
+				ASSIGN $y (- $y 2);
+				ASSERT position $x $y;
+				EXECUTE println "down";
+				EXECUTE println "down";
+				ASSIGN $x (+ $x 1);
+				ASSERT position $x $y;
+				EXECUTE println "right";
+				EXECUTE println "current position:"$x" "$y;
+				};
+			};
+		};
+	    ASSIGN $q (+ $q 1);
+		};
+UTILITY:
+        10; //any value just to ensure it will always be 
+            //selected first (while context holds)
+    FAILURE:
+	EXECUTE println "failed to go around rock " $q;
+}
+
+PLAN: {
+    NAME: "rockCheckUp"
+    GOAL:
+        ACHIEVE avoidRockUp;
+    BODY:
+        RETRIEVEALL $d rock $rock $a $b $w;
+		RETRIEVE position $x $y;
+		
+		ASSIGN $q 0;
+        WHILE : TEST (< $q 7)
+	    {
+        NEXTFACT $d rock $rock $a $b $w;
+		
+		WHEN : TEST (== $x $a)	//check if X coord = rock $q X coord
+		{
+			WHEN : TEST (== $y $b)	//check if Y coord = rock $q Y coord
+			{
+				WHEN : TEST (== $w 1)	//check water content of rock
+				{
+				PERFORM waterRock;
+				};
+				WHEN : TEST (== $w 0)	//if it does not contain water, drive around rock
+				{
+				EXECUTE println "rock detected at: " "x:"$x "y:"$y;
+				ASSIGN $y (- $y 1);
+				ASSERT position $x $y;
+				EXECUTE println "reverse";
+				ASSIGN $x (- $x 1);
+				ASSERT position $x $y;
+				EXECUTE println "left";
+				ASSIGN $y (+ $y 2);
+				ASSERT position $x $y;
+				EXECUTE println "up";
+				EXECUTE println "up";
+				ASSIGN $x (+ $x 1);
+				ASSERT position $x $y;
+				EXECUTE println "right";
+				EXECUTE println "current position:"$x" "$y;
+				};
+			};
+		};
+	    ASSIGN $q (+ $q 1);
+		};
+	UTILITY:
+		10; //any value just to ensure it will always be 
+            //selected first (while context holds)
+    FAILURE:
+		EXECUTE println "failed to go around rock " $q;
+}
+
+PLAN:	{
+	
+	NAME:	"Water_Found"
+	GOAL:
+		ACHIEVE waterRock;
+	BODY:
+		RETRIEVE position $x $y;
+		EXECUTE println "Water rock found at position: "$x", "$y;
+		EXECUTE println "Picking up rock";
+		PERFORM returnToBase;
+	FAILURE:
+		EXECUTE println "no water here";
+}
+
+PLAN:	{
+	NAME:	"return_base"
+	GOAL:
+		ACHIEVE returnToBase;
+	BODY:
+		RETRIEVE position $x $y;
+		
+		WHILE : TEST(> $y 0) //if Y is not 0 it does the following
+		{
+		ASSIGN $y (- $y 1); //take 1 from y
+		ASSERT position $x $y; //new robot position
+		EXECUTE println "Rover with rock at: "$x" "$y; 
+		};
+	
+		WHILE : TEST(> $x 0)	//if X is not 0 it does the following
+		{
+		ASSIGN $x (- $x 1);
+		ASSERT position $x $y;
+		EXECUTE println "Rover with rock at: " $x" "$y;
+		};
+		RETRIEVE position $x $y;
+		EXECUTE println "At base with water rock";
+		EXECUTE println "returning to previous position to ensure no more rocks exist";
+}
